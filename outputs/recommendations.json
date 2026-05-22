@@ -3,24 +3,24 @@
     "user_id": 1,
     "recommendations": [
       {
-        "product_id": 201,
-        "score": 4.8398
-      },
-      {
-        "product_id": 101,
-        "score": 4.8398
-      },
-      {
         "product_id": 103,
-        "score": 4.52
-      },
-      {
-        "product_id": 102,
-        "score": 3.9403
+        "score": 4.3857
       },
       {
         "product_id": 105,
-        "score": 3.4401
+        "score": 3.4334
+      },
+      {
+        "product_id": 203,
+        "score": 2.7038
+      },
+      {
+        "product_id": 204,
+        "score": 2.4135
+      },
+      {
+        "product_id": 104,
+        "score": 2.075
       }
     ]
   },
@@ -28,24 +28,24 @@
     "user_id": 2,
     "recommendations": [
       {
-        "product_id": 103,
-        "score": 4.7313
-      },
-      {
-        "product_id": 201,
-        "score": 3.9603
-      },
-      {
-        "product_id": 101,
-        "score": 3.9603
-      },
-      {
         "product_id": 102,
-        "score": 3.194
+        "score": 3.6186
+      },
+      {
+        "product_id": 202,
+        "score": 2.8072
       },
       {
         "product_id": 105,
-        "score": 2.5985
+        "score": 2.1371
+      },
+      {
+        "product_id": 104,
+        "score": 1.72
+      },
+      {
+        "product_id": 305,
+        "score": 1.3436
       }
     ]
   },
@@ -53,24 +53,24 @@
     "user_id": 3,
     "recommendations": [
       {
-        "product_id": 102,
-        "score": 4.8268
-      },
-      {
-        "product_id": 202,
-        "score": 4.7767
-      },
-      {
         "product_id": 103,
-        "score": 4.5964
+        "score": 4.8692
+      },
+      {
+        "product_id": 101,
+        "score": 4.0407
+      },
+      {
+        "product_id": 201,
+        "score": 4.0407
       },
       {
         "product_id": 105,
-        "score": 4.2247
+        "score": 4.0347
       },
       {
         "product_id": 204,
-        "score": 4.063
+        "score": 3.473
       }
     ]
   },
@@ -78,24 +78,24 @@
     "user_id": 4,
     "recommendations": [
       {
-        "product_id": 104,
-        "score": 4.8032
-      },
-      {
-        "product_id": 204,
-        "score": 4.7757
-      },
-      {
         "product_id": 202,
-        "score": 4.3804
+        "score": 3.8198
+      },
+      {
+        "product_id": 102,
+        "score": 3.3648
       },
       {
         "product_id": 203,
-        "score": 4.1706
+        "score": 3.284
       },
       {
         "product_id": 105,
-        "score": 3.9145
+        "score": 3.1646
+      },
+      {
+        "product_id": 305,
+        "score": 2.5737
       }
     ]
   },
@@ -103,24 +103,24 @@
     "user_id": 5,
     "recommendations": [
       {
-        "product_id": 105,
-        "score": 4.9388
-      },
-      {
-        "product_id": 203,
-        "score": 4.7835
-      },
-      {
-        "product_id": 202,
-        "score": 3.9926
-      },
-      {
-        "product_id": 305,
-        "score": 3.8112
-      },
-      {
         "product_id": 204,
-        "score": 3.6088
+        "score": 3.0027
+      },
+      {
+        "product_id": 104,
+        "score": 2.7938
+      },
+      {
+        "product_id": 101,
+        "score": 2.4576
+      },
+      {
+        "product_id": 201,
+        "score": 2.4576
+      },
+      {
+        "product_id": 103,
+        "score": 2.0973
       }
     ]
   },
@@ -128,24 +128,24 @@
     "user_id": 6,
     "recommendations": [
       {
-        "product_id": 201,
-        "score": 4.8622
-      },
-      {
-        "product_id": 101,
-        "score": 4.8622
-      },
-      {
         "product_id": 103,
-        "score": 4.4256
+        "score": 3.9628
       },
       {
         "product_id": 102,
-        "score": 4.0847
+        "score": 3.817
       },
       {
-        "product_id": 105,
-        "score": 3.9774
+        "product_id": 202,
+        "score": 3.1031
+      },
+      {
+        "product_id": 203,
+        "score": 3.0493
+      },
+      {
+        "product_id": 305,
+        "score": 2.345
       }
     ]
   }

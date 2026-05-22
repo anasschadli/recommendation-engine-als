@@ -4,6 +4,8 @@ Ce dossier contient la partie **Personne 2 - ML Engineer Spark ALS** du projet B
 
 L'objectif est de prendre le fichier nettoye `ratings_clean.csv`, d'entrainer un modele de recommandation avec **PySpark MLlib ALS**, puis de produire le fichier principal `recommendations.json` pour l'equipe Backend.
 
+Les recommandations exportees excluent les produits deja notes/interagis par chaque utilisateur.
+
 ## Structure
 
 ```text
@@ -39,6 +41,12 @@ Colonnes obligatoires :
 
 Le fichier de test `data/ratings_clean.csv` contient 30 lignes pour lancer la partie ALS meme si le nettoyage Data n'est pas encore termine.
 
+Le meme format peut etre utilise avec un fichier CSV beaucoup plus grand fourni par l'equipe Data, tant que l'en-tete reste :
+
+```csv
+user_id,product_id,rating
+```
+
 ## Fichier de sortie produit
 
 Le resultat principal est `outputs/recommendations.json` :
@@ -48,8 +56,8 @@ Le resultat principal est `outputs/recommendations.json` :
   {
     "user_id": 1,
     "recommendations": [
-      { "product_id": 101, "score": 4.82 },
-      { "product_id": 205, "score": 4.61 }
+      { "product_id": 205, "score": 4.82 },
+      { "product_id": 306, "score": 4.61 }
     ]
   }
 ]
@@ -61,8 +69,8 @@ Ce fichier peut ensuite etre lu par le Backend pour insertion dans MongoDB Atlas
 {
   "user_id": 1,
   "recommendations": [
-    { "product_id": 101, "score": 4.82 },
-    { "product_id": 205, "score": 4.61 }
+    { "product_id": 205, "score": 4.82 },
+    { "product_id": 306, "score": 4.61 }
   ]
 }
 ```
@@ -139,10 +147,12 @@ Le script utilise aussi `nonnegative=True`, ce qui force des facteurs positifs e
 7. Entrainement d'un modele ALS avec Spark MLlib sur le split train.
 8. Evaluation du modele avec RMSE sur le split test.
 9. Reentrainement du modele final sur toutes les interactions valides.
-10. Generation du top N recommandations par utilisateur.
-11. Conversion en JSON imbrique.
-12. Sauvegarde de `outputs/recommendations.json`.
-13. Sauvegarde optionnelle du modele dans `models/als_model`.
+10. Generation de candidats ALS par utilisateur.
+11. Suppression des produits deja notes par chaque utilisateur avec un anti-join Spark.
+12. Selection du top N final parmi les produits non deja vus.
+13. Conversion en JSON imbrique.
+14. Sauvegarde de `outputs/recommendations.json`.
+15. Sauvegarde optionnelle du modele dans `models/als_model`.
 
 ## Interpretation du RMSE
 

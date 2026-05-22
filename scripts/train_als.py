@@ -19,6 +19,7 @@ from pyspark.ml.evaluation import RegressionEvaluator
 from pyspark.ml.recommendation import ALS
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
+from pyspark.sql.window import Window
 
 
 REQUIRED_COLUMNS = {"user_id", "product_id", "rating"}
@@ -200,9 +201,9 @@ def build_recommendation_payload(recommendations_df: DataFrame) -> List[Dict[str
     for row in recommendations_df.orderBy("user_id").collect():
         user_recommendations = []
 
-        for recommendation in row["recommendations"]:
+        for recommendation in row["recommendations"] or []:
             recommendation_dict = recommendation.asDict()
-            predicted_score = recommendation_dict.get("rating")
+            predicted_score = recommendation_dict.get("score")
 
             user_recommendations.append(
                 {
@@ -219,6 +220,75 @@ def build_recommendation_payload(recommendations_df: DataFrame) -> List[Dict[str
         )
 
     return payload
+
+
+def get_recommendation_candidate_count(model, ratings_df: DataFrame, top_n: int) -> int:
+    """Calcule combien de candidats ALS demander avant filtrage des produits vus."""
+    item_count = model.itemFactors.count()
+    max_seen_count = (
+        ratings_df.groupBy("user_id")
+        .count()
+        .agg(F.max("count").alias("max_seen_count"))
+        .first()["max_seen_count"]
+        or 0
+    )
+
+    candidate_count = min(int(item_count), int(top_n + max_seen_count))
+
+    logging.info("Produits appris par ALS : %s", item_count)
+    logging.info("Interactions max par utilisateur : %s", max_seen_count)
+    logging.info("Candidats ALS demandes par utilisateur : %s", candidate_count)
+
+    return candidate_count
+
+
+def generate_unseen_recommendations(model, ratings_df: DataFrame, top_n: int) -> DataFrame:
+    """Genere les top N recommandations en excluant les produits deja notes."""
+    candidate_count = get_recommendation_candidate_count(model, ratings_df, top_n)
+    if candidate_count == 0:
+        return ratings_df.select("user_id").distinct().withColumn(
+            "recommendations",
+            F.array().cast("array<struct<rank:int,product_id:int,score:float>>"),
+        )
+
+    candidates_df = model.recommendForAllUsers(candidate_count)
+    exploded_candidates_df = candidates_df.select(
+        "user_id",
+        F.explode("recommendations").alias("recommendation"),
+    ).select(
+        "user_id",
+        F.col("recommendation.product_id").alias("product_id"),
+        F.col("recommendation.rating").alias("score"),
+    )
+
+    seen_products_df = ratings_df.select("user_id", "product_id").distinct()
+    unseen_candidates_df = exploded_candidates_df.join(
+        seen_products_df,
+        on=["user_id", "product_id"],
+        how="left_anti",
+    )
+
+    ranking_window = Window.partitionBy("user_id").orderBy(
+        F.desc("score"),
+        F.asc("product_id"),
+    )
+    ranked_recommendations_df = (
+        unseen_candidates_df.withColumn("rank", F.row_number().over(ranking_window))
+        .filter(F.col("rank") <= top_n)
+        .select("user_id", "rank", "product_id", "score")
+    )
+
+    grouped_recommendations_df = ranked_recommendations_df.groupBy("user_id").agg(
+        F.sort_array(
+            F.collect_list(F.struct("rank", "product_id", "score"))
+        ).alias("recommendations")
+    )
+
+    return ratings_df.select("user_id").distinct().join(
+        grouped_recommendations_df,
+        on="user_id",
+        how="left",
+    )
 
 
 def write_text(spark: SparkSession, output_path: str, content: str) -> None:
@@ -245,10 +315,11 @@ def write_text(spark: SparkSession, output_path: str, content: str) -> None:
 def save_recommendations_json(
     spark: SparkSession,
     model,
+    ratings_df: DataFrame,
     output_path: str,
     top_n: int,
 ) -> int:
-    recommendations_df = model.recommendForAllUsers(top_n)
+    recommendations_df = generate_unseen_recommendations(model, ratings_df, top_n)
     payload = build_recommendation_payload(recommendations_df)
     json_content = json.dumps(payload, ensure_ascii=False, indent=2)
 
@@ -280,12 +351,18 @@ def main() -> None:
     try:
         ratings_df = load_and_prepare_ratings(spark, args.input)
         model, rmse = train_als_model(ratings_df, args)
-        user_count = save_recommendations_json(spark, model, args.output, args.top_n)
+        user_count = save_recommendations_json(
+            spark,
+            model,
+            ratings_df,
+            args.output,
+            args.top_n,
+        )
 
         if not args.no_save_model:
             save_model(model, args.model_output)
 
-        logging.info("Nombre d'utilisateurs avec recommandations : %s", user_count)
+        logging.info("Nombre d'utilisateurs exportes : %s", user_count)
         if rmse is not None:
             logging.info("RMSE final : %.4f", rmse)
     finally:
