@@ -1,0 +1,152 @@
+[
+  {
+    "user_id": 1,
+    "recommendations": [
+      {
+        "product_id": 201,
+        "score": 4.8398
+      },
+      {
+        "product_id": 101,
+        "score": 4.8398
+      },
+      {
+        "product_id": 103,
+        "score": 4.52
+      },
+      {
+        "product_id": 102,
+        "score": 3.9403
+      },
+      {
+        "product_id": 105,
+        "score": 3.4401
+      }
+    ]
+  },
+  {
+    "user_id": 2,
+    "recommendations": [
+      {
+        "product_id": 103,
+        "score": 4.7313
+      },
+      {
+        "product_id": 201,
+        "score": 3.9603
+      },
+      {
+        "product_id": 101,
+        "score": 3.9603
+      },
+      {
+        "product_id": 102,
+        "score": 3.194
+      },
+      {
+        "product_id": 105,
+        "score": 2.5985
+      }
+    ]
+  },
+  {
+    "user_id": 3,
+    "recommendations": [
+      {
+        "product_id": 102,
+        "score": 4.8268
+      },
+      {
+        "product_id": 202,
+        "score": 4.7767
+      },
+      {
+        "product_id": 103,
+        "score": 4.5964
+      },
+      {
+        "product_id": 105,
+        "score": 4.2247
+      },
+      {
+        "product_id": 204,
+        "score": 4.063
+      }
+    ]
+  },
+  {
+    "user_id": 4,
+    "recommendations": [
+      {
+        "product_id": 104,
+        "score": 4.8032
+      },
+      {
+        "product_id": 204,
+        "score": 4.7757
+      },
+      {
+        "product_id": 202,
+        "score": 4.3804
+      },
+      {
+        "product_id": 203,
+        "score": 4.1706
+      },
+      {
+        "product_id": 105,
+        "score": 3.9145
+      }
+    ]
+  },
+  {
+    "user_id": 5,
+    "recommendations": [
+      {
+        "product_id": 105,
+        "score": 4.9388
+      },
+      {
+        "product_id": 203,
+        "score": 4.7835
+      },
+      {
+        "product_id": 202,
+        "score": 3.9926
+      },
+      {
+        "product_id": 305,
+        "score": 3.8112
+      },
+      {
+        "product_id": 204,
+        "score": 3.6088
+      }
+    ]
+  },
+  {
+    "user_id": 6,
+    "recommendations": [
+      {
+        "product_id": 201,
+        "score": 4.8622
+      },
+      {
+        "product_id": 101,
+        "score": 4.8622
+      },
+      {
+        "product_id": 103,
+        "score": 4.4256
+      },
+      {
+        "product_id": 102,
+        "score": 4.0847
+      },
+      {
+        "product_id": 105,
+        "score": 3.9774
+      }
+    ]
+  }
+]
