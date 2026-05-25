@@ -1,18 +1,17 @@
 # Commandes AWS — Personne 3 Cloud / EMR
-## Auteur : Personne 3
 ## Projet : Moteur de recommandation e-commerce Big Data
 
 ---
 
 ## 1. Configuration AWS CLI
 aws configure
-# Access Key ID     : [votre clé]
-# Secret Access Key : [votre clé]
-# Region            : eu-west-1
-# Output format     : json
+Access Key ID     : [votre clé]
+Secret Access Key : [votre clé]
+Region            : eu-west-1
+Output format     : json
 
 ## 2. Bucket S3
-# Créer le bucket
+Créer le bucket
 aws s3 mb s3://ecommerce-bigdata-bucket --region eu-west-1
 
 # Vérifier la structure
