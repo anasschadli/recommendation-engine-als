@@ -23,7 +23,7 @@ CLUSTER_ID=$(aws emr create-cluster \
         ActionOnFailure=CONTINUE,\
         Args=[s3://ecommerce-bigdata-bucket/scripts/train_als.py,\
 --input,s3://ecommerce-bigdata-bucket/raw/ratings_clean.csv,\
---output,s3://ecommerce-bigdata-bucket/outputs/] \
+--output,s3://ecommerce-bigdata-bucket/outputs/recommendations] \
     --query 'ClusterId' \
     --output text)
 
