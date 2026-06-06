@@ -34,7 +34,7 @@ def clean_data_task():
     """
     Nettoyage et préparation des données
     """
-    print("🧹 NETTOYAGE DES DONNÉES")
+    print("DATA CLEANING TASK")
     print("=" * 60)
     
     import csv
@@ -42,34 +42,34 @@ def clean_data_task():
     # Fichiers - Chemins relatifs au PROJECT_ROOT
     input_file = os.path.join(PROJECT_ROOT, 'data', 'ratings_clean.csv')
     
-    print(f"📂 Projet root: {PROJECT_ROOT}")
-    print(f"📂 Fichier d'entrée: {input_file}")
+    print(f"Project root: {PROJECT_ROOT}")
+    print(f"Input file: {input_file}")
     
     # Vérification
     if not os.path.exists(input_file):
-        print(f"❌ Fichier d'entrée non trouvé: {input_file}")
-        print(f"   Fichiers disponibles: {os.listdir(PROJECT_ROOT) if os.path.exists(PROJECT_ROOT) else 'REPERTOIRE INEXISTANT'}")
-        raise FileNotFoundError(f"Fichier {input_file} introuvable")
+        print(f"ERROR: Input file not found: {input_file}")
+        print(f"   Available files: {os.listdir(PROJECT_ROOT) if os.path.exists(PROJECT_ROOT) else 'DIRECTORY NOT FOUND'}")
+        raise FileNotFoundError(f"File {input_file} not found")
     
-    print(f"✓ Fichier trouvé")
+    print(f"File found")
     
     # Statistiques de base
     with open(input_file, 'r') as f:
         reader = csv.DictReader(f)
         rows = list(reader)
     
-    print(f"✓ Nombre de lignes: {len(rows)}")
-    print(f"✓ Colonnes: {list(rows[0].keys()) if rows else 'N/A'}")
+    print(f"Number of rows: {len(rows)}")
+    print(f"Columns: {list(rows[0].keys()) if rows else 'N/A'}")
     
     # Validation
     required_cols = {'user_id', 'product_id', 'rating'}
     if rows:
         cols = set(rows[0].keys())
         if not required_cols.issubset(cols):
-            print(f"❌ Colonnes manquantes: {required_cols - cols}")
-            raise ValueError(f"Colonnes requises: {required_cols}")
+            print(f"ERROR: Missing columns: {required_cols - cols}")
+            raise ValueError(f"Required columns: {required_cols}")
     
-    print("✅ Données validées et prêtes pour l'entraînement")
+    print("Data validated and ready for training")
     return "Données nettoyées avec succès"
 
 clean_data = PythonOperator(
@@ -85,22 +85,22 @@ def train_als_task():
     """
     Entraînement du modèle ALS avec Spark
     """
-    print("🚀 ENTRAÎNEMENT DU MODÈLE ALS")
+    print("ALS MODEL TRAINING TASK")
     print("=" * 60)
     
     # Chemins
     script = os.path.join(PROJECT_ROOT, 'scripts', 'train_als.py')
     
-    print(f"📂 Script: {script}")
+    print(f"Script: {script}")
     
     if not os.path.exists(script):
-        print(f"❌ Script non trouvé: {script}")
-        raise FileNotFoundError(f"Script {script} introuvable")
+        print(f"ERROR: Script not found: {script}")
+        raise FileNotFoundError(f"Script {script} not found")
     
-    print(f"✓ Script trouvé")
+    print(f"Script found")
     
     # Lancer le script Spark
-    print("🔧 Lancement spark-submit...")
+    print("Starting spark-submit...")
     try:
         result = subprocess.run(
             [
@@ -118,18 +118,18 @@ def train_als_task():
         )
         
         if result.returncode != 0:
-            print(f"❌ Erreur Spark: {result.stderr}")
+            print(f"ERROR: Spark job failed: {result.stderr}")
             print(f"STDOUT: {result.stdout}")
-            raise RuntimeError(f"Spark job échoué")
+            raise RuntimeError(f"Spark job failed")
         
         print(result.stdout)
-        print("✅ Modèle ALS entraîné avec succès")
+        print("ALS model training completed successfully")
         
     except subprocess.TimeoutExpired:
-        print("❌ Timeout: Le job Spark a dépassé le délai")
+        print("ERROR: Spark job exceeded timeout")
         raise
     except Exception as e:
-        print(f"❌ Erreur: {e}")
+        print(f"ERROR: {e}")
         raise
     
     return "Modèle ALS entraîné"
@@ -147,7 +147,7 @@ def generate_recommendations_task():
     """
     Génération des recommandations (fait parte du script train_als.py)
     """
-    print("📊 GÉNÉRATION DES RECOMMANDATIONS")
+    print("RECOMMENDATIONS GENERATION TASK")
     print("=" * 60)
     
     import json
@@ -156,25 +156,25 @@ def generate_recommendations_task():
     
     # Vérifier que le fichier a été créé
     if not os.path.exists(output_file):
-        print(f"❌ Fichier de recommandations non trouvé: {output_file}")
-        raise FileNotFoundError(f"Fichier {output_file} introuvable")
+        print(f"ERROR: Recommendations file not found: {output_file}")
+        raise FileNotFoundError(f"File {output_file} not found")
     
     # Charger et valider
     with open(output_file, 'r') as f:
         data = json.load(f)
     
-    print(f"✓ Fichier trouvé: {output_file}")
-    print(f"✓ Nombre d'utilisateurs: {len(data)}")
-    print(f"✓ Total recommandations: {sum(len(u.get('recommendations', [])) for u in data)}")
+    print(f"File found: {output_file}")
+    print(f"Number of users: {len(data)}")
+    print(f"Total recommendations: {sum(len(u.get('recommendations', [])) for u in data)}")
     
     # Validation du format
     for user in data[:1]:  # Vérifier le premier
         required_keys = {'user_id', 'recommendations'}
         if not required_keys.issubset(set(user.keys())):
-            print(f"❌ Format invalide: clés manquantes")
-            raise ValueError("Format JSON invalide")
+            print(f"ERROR: Invalid format - missing keys")
+            raise ValueError("Invalid JSON format")
     
-    print("✅ Recommandations générées et validées")
+    print("Recommendations generated and validated")
     return f"{len(data)} utilisateurs avec recommandations"
 
 generate_recommendations = PythonOperator(
@@ -190,19 +190,19 @@ def insert_to_mongodb_task():
     """
     Insertion des recommandations dans MongoDB
     """
-    print("💾 INSERTION DANS MONGODB")
+    print("MONGODB INSERTION TASK")
     print("=" * 60)
     
     script = os.path.join(PROJECT_ROOT, 'scripts', 'insert_mock_data.py')
     
     if not os.path.exists(script):
-        print(f"❌ Script d'insertion non trouvé: {script}")
-        raise FileNotFoundError(f"Script {script} introuvable")
+        print(f"ERROR: Insert script not found: {script}")
+        raise FileNotFoundError(f"Script {script} not found")
     
-    print(f"✓ Script trouvé: {script}")
+    print(f"Script found: {script}")
     
     # Lancer le script d'insertion
-    print("🔧 Lancement du script d'insertion...")
+    print("Starting insert script...")
     try:
         result = subprocess.run(
             [PYTHON_EXEC, script],
@@ -216,16 +216,16 @@ def insert_to_mongodb_task():
         print(result.stdout)
         
         if result.returncode != 0:
-            print(f"❌ Erreur: {result.stderr}")
-            raise RuntimeError(f"Insertion échouée")
+            print(f"ERROR: {result.stderr}")
+            raise RuntimeError(f"Insert operation failed")
         
-        print("✅ Données insérées dans MongoDB avec succès")
+        print("Data successfully inserted into MongoDB")
         
     except subprocess.TimeoutExpired:
-        print("❌ Timeout: L'insertion a dépassé le délai")
+        print("ERROR: Insert operation exceeded timeout")
         raise
     except Exception as e:
-        print(f"❌ Erreur: {e}")
+        print(f"ERROR: {e}")
         raise
     
     return "Données insérées dans MongoDB"
@@ -243,7 +243,7 @@ def api_ready_task():
     """
     Vérification que l'API peut servir les recommandations
     """
-    print("✅ VÉRIFICATION API")
+    print("API VERIFICATION TASK")
     print("=" * 60)
     
     try:
@@ -253,23 +253,23 @@ def api_ready_task():
         # Note: L'API peut ne pas être lancée dans le container Airflow
         # On va juste vérifier que MongoDB est accessible
         
-        print("ℹ️  Note: L'API doit être lancée séparément (http://localhost:8000)")
-        print("✓ Pour lancer l'API: python -m uvicorn api.main:app --reload")
+        print("NOTE: API must be started separately (http://localhost:8000)")
+        print("To start API: python -m uvicorn api.main:app --reload")
         
     except ImportError:
-        print("⚠️  Module 'requests' non disponible")
+        print("WARNING: 'requests' module not available")
     except Exception as e:
-        print(f"⚠️  Impossible de vérifier l'API: {e}")
+        print(f"WARNING: Unable to verify API: {e}")
     
     print("\n" + "=" * 60)
-    print("🎉 PIPELINE COMPLÉTÉ AVEC SUCCÈS")
+    print("PIPELINE COMPLETED SUCCESSFULLY")
     print("=" * 60)
-    print("\n✅ Étapes terminées:")
-    print("   1. ✅ Nettoyage des données")
-    print("   2. ✅ Entraînement du modèle ALS")
-    print("   3. ✅ Génération des recommandations")
-    print("   4. ✅ Insertion dans MongoDB")
-    print("   5. ✅ Vérification")
+    print("\nCompleted tasks:")
+    print("   1. Data cleaning")
+    print("   2. ALS model training")
+    print("   3. Recommendations generation")
+    print("   4. MongoDB insertion")
+    print("   5. API verification")
     
     return "Pipeline terminé avec succès"
 
