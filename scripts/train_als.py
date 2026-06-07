@@ -10,8 +10,10 @@ Sortie principale :
 """
 
 import argparse
+import os
 import json
 import logging
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -77,10 +79,27 @@ def is_remote_path(path: str) -> bool:
     return "://" in path
 
 
+def detect_csv_delimiter(input_path: str, fallback: str = ",") -> str:
+    """Detecte le separateur CSV le plus probable pour un fichier local."""
+    if is_remote_path(input_path):
+        return fallback
+
+    try:
+        with Path(input_path).open("r", encoding="utf-8-sig") as file_handle:
+            header_line = file_handle.readline()
+    except OSError:
+        return fallback
+
+    candidates = [",", ";", "\t", "|"]
+    delimiter = max(candidates, key=lambda candidate: header_line.count(candidate))
+    return delimiter if header_line.count(delimiter) > 0 else fallback
+
+
 def build_spark_session() -> SparkSession:
     return (
         SparkSession.builder.appName("EcommerceRecommendationALS")
-        .config("spark.sql.shuffle.partitions", "8")
+        .config("spark.sql.shuffle.partitions", "64")
+        .config("spark.sql.adaptive.enabled", "true")
         .getOrCreate()
     )
 
@@ -104,9 +123,12 @@ def load_and_prepare_ratings(spark: SparkSession, input_path: str) -> DataFrame:
     if not is_remote_path(input_path) and not Path(input_path).exists():
         raise FileNotFoundError(f"Fichier introuvable : {input_path}")
 
+    delimiter = detect_csv_delimiter(input_path)
+
     raw_df = (
         spark.read.option("header", "true")
         .option("inferSchema", "false")
+        .option("sep", delimiter)
         .csv(input_path)
     )
     raw_df = normalize_and_validate_columns(raw_df)
@@ -337,6 +359,14 @@ def save_model(model, model_output: str) -> None:
     logging.info("Modele ALS sauvegarde : %s", model_output)
 
 
+def can_save_spark_model_locally() -> bool:
+    """Verifie si Spark a les outils Hadoop Windows requis pour enregistrer un modele localement."""
+    if not sys.platform.startswith("win"):
+        return True
+
+    return bool(os.environ.get("HADOOP_HOME") or os.environ.get("hadoop.home.dir"))
+
+
 def main() -> None:
     args = parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s - %(message)s")
@@ -360,7 +390,12 @@ def main() -> None:
         )
 
         if not args.no_save_model:
-            save_model(model, args.model_output)
+            if can_save_spark_model_locally() or is_remote_path(args.model_output):
+                save_model(model, args.model_output)
+            else:
+                logging.warning(
+                    "Sauvegarde du modele ignoree sur Windows car HADOOP_HOME/hadoop.home.dir n'est pas configure."
+                )
 
         logging.info("Nombre d'utilisateurs exportes : %s", user_count)
         if rmse is not None:
