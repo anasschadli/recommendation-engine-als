@@ -1,8 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
+import pendulum
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-from airflow.operators.bash import BashOperator
-from airflow.utils.dates import days_ago
 import os
 import subprocess
 import sys
@@ -12,15 +11,16 @@ default_args = {
     'owner': 'Equipe B',
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
-    'start_date': days_ago(1),
 }
 
 dag = DAG(
     'recommendation_pipeline',
     default_args=default_args,
     description='Pipeline complet: clean data -> train ALS -> generate recommendations -> insert to MongoDB',
-    schedule_interval=None,  # Manuel uniquement (change à '@daily' pour automatique)
+    start_date=pendulum.datetime(2024, 1, 1, tz='UTC'),  # Date statique (pas de start_date dynamique)
+    schedule=None,  # Manuel uniquement (change à '@daily' pour automatique)
     catchup=False,
+    tags=['recommendation', 'als', 'spark', 'mongodb'],
 )
 
 # Variables communes - Chemins adaptés pour Docker
@@ -54,7 +54,7 @@ def clean_data_task():
     print(f"File found")
     
     # Statistiques de base
-    with open(input_file, 'r') as f:
+    with open(input_file, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         rows = list(reader)
     
@@ -120,7 +120,9 @@ def train_als_task():
         if result.returncode != 0:
             print(f"ERROR: Spark job failed: {result.stderr}")
             print(f"STDOUT: {result.stdout}")
-            raise RuntimeError(f"Spark job failed")
+            raise RuntimeError(
+                f"Spark job failed (rc={result.returncode}): {result.stderr[-2000:]}"
+            )
         
         print(result.stdout)
         print("ALS model training completed successfully")
@@ -151,28 +153,29 @@ def generate_recommendations_task():
     print("=" * 60)
     
     import json
-    
+
     output_file = os.path.join(PROJECT_ROOT, 'outputs', 'recommendations.json')
-    
+
     # Vérifier que le fichier a été créé
     if not os.path.exists(output_file):
         print(f"ERROR: Recommendations file not found: {output_file}")
         raise FileNotFoundError(f"File {output_file} not found")
-    
+
     # Charger et valider
-    with open(output_file, 'r') as f:
+    with open(output_file, 'r', encoding='utf-8') as f:
         data = json.load(f)
-    
+
     print(f"File found: {output_file}")
     print(f"Number of users: {len(data)}")
     print(f"Total recommendations: {sum(len(u.get('recommendations', [])) for u in data)}")
-    
-    # Validation du format
-    for user in data[:1]:  # Vérifier le premier
-        required_keys = {'user_id', 'recommendations'}
+
+    # Validation du format (tous les enregistrements, pas seulement le premier)
+    required_keys = {'user_id', 'recommendations'}
+    for i, user in enumerate(data):
         if not required_keys.issubset(set(user.keys())):
-            print(f"ERROR: Invalid format - missing keys")
-            raise ValueError("Invalid JSON format")
+            missing = required_keys - set(user.keys())
+            print(f"ERROR: Invalid format at record {i} - missing keys: {missing}")
+            raise ValueError(f"Invalid JSON format at record {i}: missing {missing}")
     
     print("Recommendations generated and validated")
     return f"{len(data)} utilisateurs avec recommandations"
@@ -204,20 +207,23 @@ def insert_to_mongodb_task():
     # Lancer le script d'insertion
     print("Starting insert script...")
     try:
+        # subprocess hérite déjà de l'environnement parent (pas besoin de passer env=).
+        # Le chargement d'un éventuel .env doit se faire dans insert_mock_data.py.
         result = subprocess.run(
             [PYTHON_EXEC, script],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
             timeout=60,
-            env={**os.environ}  # Inclure les variables d'environnement (pour .env)
         )
-        
+
         print(result.stdout)
-        
+
         if result.returncode != 0:
             print(f"ERROR: {result.stderr}")
-            raise RuntimeError(f"Insert operation failed")
+            raise RuntimeError(
+                f"Insert operation failed (rc={result.returncode}): {result.stderr[-2000:]}"
+            )
         
         print("Data successfully inserted into MongoDB")
         
