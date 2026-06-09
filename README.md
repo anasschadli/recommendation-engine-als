@@ -77,15 +77,15 @@ api_ready
 
 ## Technologies
 
-| Partie | Technologie | Role |
-|---|---|---|
-| Big Data / ML | Apache Spark MLlib ALS | Entrainement du modele de recommandation |
-| Cloud | GCP Cloud Storage | Stockage des donnees, scripts, modeles et sorties |
-| Execution Spark | GCP Dataproc ou local | Execution distribuee du job PySpark |
-| Base de donnees | MongoDB Atlas | Stockage des recommandations finales |
-| API | FastAPI | Exposition des recommandations via REST |
-| Orchestration | Apache Airflow | Automatisation du pipeline |
-| Bonus / perspective | Vertex AI | Extension possible pour gestion ML cloud |
+| Partie              | Technologie            | Role                                              |
+| ------------------- | ---------------------- | ------------------------------------------------- |
+| Big Data / ML       | Apache Spark MLlib ALS | Entrainement du modele de recommandation          |
+| Cloud               | GCP Cloud Storage      | Stockage des donnees, scripts, modeles et sorties |
+| Execution Spark     | GCP Dataproc ou local  | Execution distribuee du job PySpark               |
+| Base de donnees     | MongoDB Atlas          | Stockage des recommandations finales              |
+| API                 | FastAPI                | Exposition des recommandations via REST           |
+| Orchestration       | Apache Airflow         | Automatisation du pipeline                        |
+| Bonus / perspective | Vertex AI              | Extension possible pour gestion ML cloud          |
 
 ## Contrats de donnees
 
@@ -186,14 +186,14 @@ Objectif : produire les recommandations finales.
 
 #### Personne 1 - Data Engineer
 
-| Priorite | Taches |
-|---|---|
-| Haute | Trouver ou preparer un dataset e-commerce |
-| Haute | Nettoyer les donnees |
-| Haute | Produire les colonnes `user_id`, `product_id`, `rating` |
-| Haute | Generer `data/ratings_clean.csv` |
-| Moyenne | Calculer des statistiques : utilisateurs, produits, interactions |
-| Faible | Ajouter des graphiques pour le rapport |
+| Priorite | Taches                                                           |
+| -------- | ---------------------------------------------------------------- |
+| Haute    | Trouver ou preparer un dataset e-commerce                        |
+| Haute    | Nettoyer les donnees                                             |
+| Haute    | Produire les colonnes `user_id`, `product_id`, `rating`          |
+| Haute    | Generer `data/ratings_clean.csv`                                 |
+| Moyenne  | Calculer des statistiques : utilisateurs, produits, interactions |
+| Faible   | Ajouter des graphiques pour le rapport                           |
 
 Livrables :
 
@@ -205,15 +205,15 @@ description du nettoyage
 
 #### Personne 2 - ML Engineer Spark ALS
 
-| Priorite | Taches |
-|---|---|
-| Haute | Developper `scripts/train_als.py` |
-| Haute | Entrainer le modele ALS |
-| Haute | Generer les recommandations top N par utilisateur |
-| Haute | Exporter `outputs/recommendations.json` |
-| Haute | Filtrer les produits deja vus par chaque utilisateur |
-| Moyenne | Evaluer le modele avec RMSE |
-| Faible | Tester plusieurs parametres ALS |
+| Priorite | Taches                                               |
+| -------- | ---------------------------------------------------- |
+| Haute    | Developper `scripts/train_als.py`                    |
+| Haute    | Entrainer le modele ALS                              |
+| Haute    | Generer les recommandations top N par utilisateur    |
+| Haute    | Exporter `outputs/recommendations.json`              |
+| Haute    | Filtrer les produits deja vus par chaque utilisateur |
+| Moyenne  | Evaluer le modele avec RMSE                          |
+| Faible   | Tester plusieurs parametres ALS                      |
 
 Livrables :
 
@@ -226,14 +226,14 @@ RMSE et explication du modele
 
 #### Personne 3 - Cloud / Dataproc
 
-| Priorite | Taches |
-|---|---|
-| Haute | Preparer l'organisation locale ou cloud |
-| Haute | Creer les dossiers `raw/`, `processed/`, `outputs/`, `scripts/`, `models/` |
-| Haute | Tester l'execution Spark |
-| Moyenne | Lancer le job sur Dataproc si possible |
-| Moyenne | Documenter les commandes cloud |
-| Faible | Presenter Vertex AI comme extension possible |
+| Priorite | Taches                                                                     |
+| -------- | -------------------------------------------------------------------------- |
+| Haute    | Preparer l'organisation locale ou cloud                                    |
+| Haute    | Creer les dossiers `raw/`, `processed/`, `outputs/`, `scripts/`, `models/` |
+| Haute    | Tester l'execution Spark                                                   |
+| Moyenne  | Lancer le job sur Dataproc si possible                                     |
+| Moyenne  | Documenter les commandes cloud                                             |
+| Faible   | Presenter Vertex AI comme extension possible                               |
 
 Livrables :
 
@@ -252,17 +252,17 @@ Objectif : consommer `recommendations.json`, stocker les recommandations et les 
 
 #### Personne 4 - Backend MongoDB + FastAPI
 
-| Priorite | Taches |
-|---|---|
-| Haute | Creer MongoDB Atlas |
-| Haute | Creer la collection `recommendations` |
-| Haute | Inserer `recommendations_mock.json` pendant le developpement |
-| Haute | Remplacer le mock par `outputs/recommendations.json` a l'integration |
-| Haute | Developper l'API FastAPI |
-| Haute | Creer `GET /recommendations/{user_id}` |
-| Moyenne | Ajouter `GET /health` |
-| Moyenne | Tester l'API avec Swagger |
-| Faible | Ajouter `GET /users` ou `GET /products/{product_id}` |
+| Priorite | Taches                                                               |
+| -------- | -------------------------------------------------------------------- |
+| Haute    | Creer MongoDB Atlas                                                  |
+| Haute    | Creer la collection `recommendations`                                |
+| Haute    | Inserer `recommendations_mock.json` pendant le developpement         |
+| Haute    | Remplacer le mock par `outputs/recommendations.json` a l'integration |
+| Haute    | Developper l'API FastAPI                                             |
+| Haute    | Creer `GET /recommendations/{user_id}`                               |
+| Moyenne  | Ajouter `GET /health`                                                |
+| Moyenne  | Tester l'API avec Swagger                                            |
+| Faible   | Ajouter `GET /users` ou `GET /products/{product_id}`                 |
 
 Livrables :
 
@@ -275,15 +275,15 @@ documentation Swagger
 
 #### Personne 5 - Airflow / Integration / Rapport
 
-| Priorite | Taches |
-|---|---|
-| Haute | Creer un DAG Airflow avec des taches fictives au debut |
-| Haute | Definir le pipeline `clean -> train -> generate -> insert` |
-| Haute | Preparer la structure du rapport |
-| Haute | Preparer les slides |
-| Moyenne | Remplacer les taches fictives par les vrais scripts |
-| Moyenne | Tester le pipeline complet |
-| Faible | Ajouter logs, captures ou monitoring simple |
+| Priorite | Taches                                                     |
+| -------- | ---------------------------------------------------------- |
+| Haute    | Creer un DAG Airflow avec des taches fictives au debut     |
+| Haute    | Definir le pipeline `clean -> train -> generate -> insert` |
+| Haute    | Preparer la structure du rapport                           |
+| Haute    | Preparer les slides                                        |
+| Moyenne  | Remplacer les taches fictives par les vrais scripts        |
+| Moyenne  | Tester le pipeline complet                                 |
+| Faible   | Ajouter logs, captures ou monitoring simple                |
 
 Livrables :
 
@@ -342,13 +342,13 @@ Etapes :
 
 Parametres ALS utilises par defaut :
 
-| Parametre | Valeur | Role |
-|---|---:|---|
-| `rank` | `10` | Nombre de facteurs latents |
-| `maxIter` | `10` | Nombre d'iterations |
-| `regParam` | `0.1` | Regularisation |
+| Parametre           | Valeur | Role                                                    |
+| ------------------- | -----: | ------------------------------------------------------- |
+| `rank`              |   `10` | Nombre de facteurs latents                              |
+| `maxIter`           |   `10` | Nombre d'iterations                                     |
+| `regParam`          |  `0.1` | Regularisation                                          |
 | `coldStartStrategy` | `drop` | Ignore les predictions impossibles pendant l'evaluation |
-| `nonnegative` | `True` | Force des facteurs positifs |
+| `nonnegative`       | `True` | Force des facteurs positifs                             |
 
 ## Execution locale
 
@@ -370,6 +370,12 @@ Execution simple :
 
 ```bash
 spark-submit scripts/train_als.py
+```
+
+ou bien en utilisant uv :
+
+```bash
+uv run scripts\train_als.py
 ```
 
 Execution avec parametres :
@@ -506,26 +512,26 @@ Objectif Airflow :
 
 ### Semaine 1
 
-| Jour | Equipe A | Equipe B |
-|---|---|---|
-| J1 | Choix dataset + contrat final | Creation mock JSON + structure API |
-| J2 | Nettoyage dataset | MongoDB Atlas + insertion mock |
-| J3 | Script Spark ALS simple | Route `GET /recommendations/{user_id}` |
-| J4 | Generation recommandations test | Swagger + tests API |
-| J5 | Amelioration modele | DAG Airflow fictif |
-| J6-J7 | Tests Spark / cloud | Rapport + captures API/MongoDB |
+| Jour  | Equipe A                        | Equipe B                               |
+| ----- | ------------------------------- | -------------------------------------- |
+| J1    | Choix dataset + contrat final   | Creation mock JSON + structure API     |
+| J2    | Nettoyage dataset               | MongoDB Atlas + insertion mock         |
+| J3    | Script Spark ALS simple         | Route `GET /recommendations/{user_id}` |
+| J4    | Generation recommandations test | Swagger + tests API                    |
+| J5    | Amelioration modele             | DAG Airflow fictif                     |
+| J6-J7 | Tests Spark / cloud             | Rapport + captures API/MongoDB         |
 
 ### Semaine 2
 
-| Jour | Equipe A | Equipe B |
-|---|---|---|
-| J8 | Generation recommandations finales | Preparation integration |
-| J9 | Export final `recommendations.json` | Import du vrai fichier dans MongoDB |
-| J10 | Tests modele | Test API avec vraies donnees |
-| J11 | Captures Spark/Dataproc | DAG Airflow avec vrais scripts |
-| J12 | Correction bugs | Correction bugs |
-| J13 | Aide rapport | Slides + demonstration |
-| J14 | Repetition soutenance | Repetition soutenance |
+| Jour | Equipe A                            | Equipe B                            |
+| ---- | ----------------------------------- | ----------------------------------- |
+| J8   | Generation recommandations finales  | Preparation integration             |
+| J9   | Export final `recommendations.json` | Import du vrai fichier dans MongoDB |
+| J10  | Tests modele                        | Test API avec vraies donnees        |
+| J11  | Captures Spark/Dataproc             | DAG Airflow avec vrais scripts      |
+| J12  | Correction bugs                     | Correction bugs                     |
+| J13  | Aide rapport                        | Slides + demonstration              |
+| J14  | Repetition soutenance               | Repetition soutenance               |
 
 ## Demonstration finale
 
