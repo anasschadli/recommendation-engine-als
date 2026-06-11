@@ -1,4 +1,5 @@
 services:
+
   postgres:
     image: postgres:15
     environment:
@@ -15,8 +16,24 @@ services:
       timeout: 5s
       retries: 5
 
+  mongodb:
+    image: mongo:6.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ecommerce_recommendation
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
   airflow-init:
-    image: apache/airflow:2.7.3-python3.11
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     command: >
       bash -c "airflow db init &&
                airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin || true"
@@ -27,8 +44,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW_HOME: /opt/airflow
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      MONGO_URI: mongodb://mongodb:27017
     depends_on:
       postgres:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     volumes:
       - ./airflow/dags:/opt/airflow/dags
@@ -37,7 +60,9 @@ services:
     user: "0:0"
 
   airflow-webserver:
-    image: apache/airflow:2.7.3-python3.11
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     command: webserver
     environment:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
@@ -46,8 +71,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW_HOME: /opt/airflow
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      MONGO_URI: mongodb://mongodb:27017
     depends_on:
       postgres:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
@@ -65,7 +96,9 @@ services:
     user: "0:0"
 
   airflow-scheduler:
-    image: apache/airflow:2.7.3-python3.11
+    build:
+      context: .
+      dockerfile: Dockerfile.airflow
     command: scheduler
     environment:
       AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
@@ -74,8 +107,14 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
       AIRFLOW_HOME: /opt/airflow
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_DEFAULT_REGION: ${AWS_DEFAULT_REGION}
+      MONGO_URI: mongodb://mongodb:27017
     depends_on:
       postgres:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       airflow-init:
         condition: service_completed_successfully
@@ -86,5 +125,22 @@ services:
       - ./airflow/logs:/opt/airflow/logs
       - ./:/opt/airflow/project
 
+  api:
+    image: python:3.11-slim
+    command: >
+      bash -c "pip install fastapi uvicorn pymongo python-dotenv &&
+               uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    volumes:
+      - ./:/app
+    working_dir: /app
+    ports:
+      - "8000:8000"
+
 volumes:
   postgres_data:
+  mongodb_data:

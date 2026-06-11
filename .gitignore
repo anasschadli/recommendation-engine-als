@@ -1,5 +1,16 @@
 .venv/
 __pycache__/
 *.pyc
+airflow/logs/
 models/als_model/
 .env
+note.txt
+
+# Logs
+*.gz
+*.log
+logs/
+logs_emr/
+stderr.txt
+
+
